@@ -1,0 +1,45 @@
+#!/bin/bash
+clear
+data_now=$(date +"%D")
+name_user=$(whoami)
+domen_name=$(hostname)
+
+echo "Дата: $data_now"
+echo "Имя учетной записи: $name_user"
+echo "Доменное имя ПК: $domen_name"
+
+echo "Процессор: "
+
+#cut -f 2 -d":"удалить все до первого двоеточия
+#awk '{$1=$1}1' удалить все пустое пространоство перед началом  
+
+model=$(lscpu | grep "Model name" | sed -r 's/Model name:\s{1,}(.*) @ .*z\s*/\1/g')
+cpu=$(lscpu | grep "CPU MHz:" | sed -r 's/CPU MHz:\s{1,}//g')
+atomc=$(lscpu | grep 'CPU(s):' | cut -f 2 -d ":" | awk '{$1=$1}1')
+arch=$(lscpu | grep "Architecture:" | sed -r 's/Architecture:\s{1,}//g')
+potok=$(lscpu | grep 'CPU(s):' | cut -f 2 -d ":" | awk '{$1=$1}1')
+
+echo -e "\tМодель - $model"
+echo -e "\tАрхитектура - $arch"
+echo -e "\tТактовая частота - $cpu"
+echo -e "\tКоличество ядер - $atomc"
+echo -e "\tКоличество потоков на ядро - $potok"
+
+memtotal=$(cat /proc/meminfo | grep 'MemTotal:' | cut -f 2 -d ":" | awk '{$1=$1}1')
+memfree=$(cat /proc/meminfo | grep 'MemFree:' | cut -f 2 -d ":" | awk '{$1=$1}1')
+
+echo "Оперативная память: "
+echo -e "\tВсего - $memtotal"
+echo -e "\tДоступно = $memfree"
+
+hardtotal=$(lshw -class disk -class storage | grep 'size:' | cut -f 2 -d ":" | awk '{$1=$1}1')
+hardfree=2
+rootdir=3
+swaptotal=$(cat /proc/meminfo | grep 'SwapTotal:' | cut -f 2 -d ":" | awk '{$1=$1}1')
+swapfree=$(cat /proc/meminfo | grep 'SwapFree:' | cut -f 2 -d ":" | awk '{$1=$1}1')
+
+echo -e "Жесткий диск:"
+echo -e "\tВсего - $hardtotal"
+echo -e "\tСмонтировано в корневую директорию: "
+echo -e "\tSWAP всего - $swaptotal"
+echo -e "\tSWAP доступно - $swapfree"

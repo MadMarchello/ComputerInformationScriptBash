@@ -43,3 +43,69 @@ echo -e "\tВсего - $hardtotal"
 echo -e "\tСмонтировано в корневую директорию: "
 echo -e "\tSWAP всего - $swaptotal"
 echo -e "\tSWAP доступно - $swapfree"
+
+#!/bin/bash
+echo "Дата: $(date +%d-%m-%Y)"
+echo "Имя учетной записи: $USER"
+echo "Доменное имя ПК: $HOSTNAME"
+
+CPU_DATA=$(lscpu)
+MEM_DATA=$(less /proc/meminfo)
+HD_DATA=$(df -h /home)
+SWAP_DATA=$(free -h)
+INF_DATA=$(ifconfig)
+
+CPU_MODEL=$(echo "$CPU_DATA" | grep "Имя модели: " | sed s/'   '//g)
+CPU_ARCHI=$(echo "$CPU_DATA" | grep "Архитектура: " | sed s/'   '//g)
+CPU_FREQ=$(echo "$CPU_DATA" | grep "CPU МГц: " | sed s/'   '//g)
+CPU_CPUS=$(echo "$CPU_DATA" | grep "CPU(s): " | sed s/'   '//g)
+CPU_THREADS=$(echo "$CPU_DATA" | grep "Потоков на ядро: " | sed s/'   '//g)
+
+MEM_TOTAL=$(echo "$MEM_DATA" | grep "MemTotal: " | sed s/'   '//g)
+MEM_FREE=$(echo "$MEM_DATA" | grep "MemFree: " | sed s/'   '//g)
+
+HD_TOTAL=$(echo "$HD_DATA" | grep "dev/sda5" | awk '{print$2}')
+HD_FREE=$(echo "$HD_DATA" | grep "dev/sda5" | awk '{print$4}')
+HD_DIR=$(echo "$HD_DATA" | grep "dev/sda5" | awk '{print$1}')
+
+SWAP_TOTAL=$(echo "$SWAP_DATA" | grep "Память" | awk '{print$2}')
+SWAP_FREE=$(echo "$SWAP_DATA" | grep "Память" | awk '{print$4}')
+
+INF_VOL=$(echo "$INF_DATA" | awk '/flags/{print $1}' | wc -l)
+INF_NAME=$(echo "$INF_DATA" | awk '/flags/{print $1}')
+INF_MAC=$(ifconfig -a | grep ether | awk '{print $2}')
+INF_IP=$(echo "$INF_DATA" | grep global | awk '{print $2}')
+
+echo "CPU INFO:"
+echo " $CPU_MODEL"
+echo " $CPU_ARCHI"
+echo " $CPU_FREQ"
+echo " $CPU_CPUS"
+echo " $CPU_THREADS"
+
+echo "MEMORY INFO:"
+echo " $MEM_TOTAL"
+echo " $MEM_FREE"
+
+echo "HD INFO:"
+echo " Размер: $HD_TOTAL"
+echo " Доступно: $HD_FREE"
+echo " Смонтировано: $HD_DIR"
+echo " SWAP всего: $SWAP_TOTAL"
+echo " SWAP доступно: $SWAP_FREE"
+
+echo "INTERFACE INFO:"
+echo " Количество: $INF_VOL"
+echo "№  Name        IP adress          mac IP"
+NUMB=$((0))
+for NAME in $INF_NAME
+do
+  NUMB=$(($NUMB+1))
+  NAME=${NAME/:/}
+  INF_MAC=$(ifconfig $NAME | grep ether | awk '{print $2}')
+  INF_IP=$(ifconfig $NAME | awk '/inet /{print $2}')
+  echo -e "$NUMB  $NAME       $INF_IP \t $INF_MAC"
+done
+echo "Скорость соединения:"
+speed-test
+

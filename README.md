@@ -1,1 +1,1 @@
-# architecture_linux
+# Computer Information Script Bash
